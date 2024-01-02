@@ -1,13 +1,13 @@
 import {useEffect,useState} from 'react'
 import {db} from './firebaseConnection'
-import {doc, setDoc, collection, addDoc, getDoc} from 'firebase/firestore'
+import {doc, setDoc, collection, addDoc, getDoc, getDocs} from 'firebase/firestore'
 import './app.css'
 
 function App() {
 
   const [title,setTitle] = useState('');
   const [author,setAuthor] = useState('');
-
+  const [posts,setPosts] = useState([]);
 
   async function handleAdd(){
     // await setDoc(doc(db, "posts","12345"),{
@@ -38,12 +38,31 @@ function App() {
 
 
   async function buscarPost(){
-    const postRef = doc(db,"posts","12345")
+    // const postRef = doc(db,"posts","12345")
 
-    await getDoc(postRef)
+    // await getDoc(postRef)
+    // .then((snapshot)=>{
+    //   setAuthor(snapshot.data().autor)
+    //   setTitle(snapshot.data().titulo)
+    // })
+    // .catch((error)=>{
+    //   console.log("Gerou erro: " + error)
+    // })
+
+    const postRef = collection(db,"posts")
+    await getDocs(postRef)
     .then((snapshot)=>{
-      setAuthor(snapshot.data().autor)
-      setTitle(snapshot.data().titulo)
+      let list = [];
+
+      snapshot.forEach((doc)=>{
+        list.push({
+          id: doc.id,
+          titulo: doc.data().titulo,
+          autor: doc.data().autor
+        })
+      })
+
+      setPosts(list);
     })
     .catch((error)=>{
       console.log("Gerou erro: " + error)
@@ -64,6 +83,18 @@ function App() {
         <button onClick={handleAdd}>Cadastrar</button>
 
         <button onClick={buscarPost}>Buscar post</button>
+
+
+        <ul>
+          {posts.map((post)=>{
+            return(
+              <li key={post.id}>
+                <span>Titulo: {post.titulo}</span> <br/>
+                <span>Autor: {post.autor}</span> <br/><br/>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
